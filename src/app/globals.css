@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #FAFAF9;
+  --bg-card: #FFFFFF;
+  --bg-inset: #F5F5F4;
+  --bg-hover: #F0EFEE;
+  --border: #E7E5E4;
+  --border-strong: #D6D3D1;
+  --good: #059669;
+  --warn: #D97706;
+  --bad: #DC2626;
+  --text-1: #1C1917;
+  --text-2: #57534E;
+  --text-3: #A8A29E;
+  --accent: #1C1917;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-geist, "Inter", system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Avatar breathing ────────────────────────────── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.02); }
+}
+.animate-breathe { animation: breathe 4s ease-in-out infinite; }
+
+/* ── Score ring transition ───────────────────────── */
+.score-ring {
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+}
+
+/* ── Risk bar fill ───────────────────────────────── */
+.risk-fill {
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+}
+
+/* ── Processing ──────────────────────────────────── */
+@keyframes ecg-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ecg-track { animation: ecg-scroll 3s linear infinite; will-change: transform; }
+
+@keyframes msg-fade {
+  0%   { opacity: 0; transform: translateY(5px); }
+  12%  { opacity: 1; transform: translateY(0); }
+  82%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-5px); }
+}
+.animate-msg { animation: msg-fade 1.6s ease-in-out; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── Slider ──────────────────────────────────────── */
+.slider-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.slider-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--bg-inset);
+  overflow: hidden;
+  pointer-events: none;
+}
+.slider-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.1s ease, background-color 0.3s ease;
+}
+.slider-ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  pointer-events: none;
+}
+.slider-tick {
+  width: 1px;
+  height: 8px;
+  background: var(--border);
+  opacity: 0.5;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 9999px;
+  background: var(--bg-card);
+  border: 2px solid var(--text-1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12), 0 0 0 0 transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
+  cursor: grab;
+}
+input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 4px rgba(28,25,23,0.06);
+}
+input[type='range']:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+input[type='range']::-moz-range-thumb {
+  height: 20px; width: 20px;
+  border-radius: 9999px;
+  background: var(--bg-card);
+  border: 2px solid var(--text-1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  cursor: grab;
+}
+
+/* ── Card ────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+/* ── Particle field background ───────────────────── */
+@keyframes float-particle {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.3; }
+  90%  { opacity: 0.3; }
+  100% { transform: translateY(-100vh) translateX(40px); opacity: 0; }
+}
+
+/* ── Avatar scan line ────────────────────────────── */
+@keyframes scanline {
+  0%   { top: 8%; opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.6; }
+  100% { top: 92%; opacity: 0; }
+}
+.avatar-scanline {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  border-radius: 999px;
+  animation: scanline 3.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── DNA Helix animation for processing ──────────── */
+@keyframes helix-rotate {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(360deg); }
+}
+
+/* ── Score ring shimmer ──────────────────────────── */
+@keyframes ring-shimmer {
+  0%   { stroke-opacity: 0.7; }
+  50%  { stroke-opacity: 1; }
+  100% { stroke-opacity: 0.7; }
+}
+.score-ring-shimmer {
+  animation: ring-shimmer 2s ease-in-out infinite;
+}
+
+/* ── Progress bar shimmer ────────────────────────── */
+@keyframes bar-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.risk-fill-shimmer {
+  background-size: 200% 100%;
+  animation: bar-shimmer 2.5s ease-in-out infinite;
+}
+
+/* ── Stagger children animation ──────────────────── */
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger-children > * {
+  animation: stagger-in 0.4s ease-out both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.18s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.24s; }
+
+/* ── Pulse dot (live indicator) ──────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.85); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }

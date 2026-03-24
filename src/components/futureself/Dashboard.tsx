@@ -7,6 +7,7 @@ import Avatar from "./Avatar";
 import ScoreCircle from "./ScoreCircle";
 import RiskBar from "./RiskBar";
 import InsightPanel from "./InsightPanel";
+import Particles from "./Particles";
 
 const RISK_TOOLTIPS = {
   heart: "Driven by chronic stress, poor sleep, and low cardio activity.",
@@ -61,7 +62,9 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
   const projectedAge = Math.round(metrics.projectedAge - (5 - timelineYear) * 0.8);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
+    <div className="min-h-screen flex flex-col relative" style={{ background: "var(--bg)" }}>
+      <Particles count={18} color="#D6D3D1" />
+
       {/* Header */}
       <header
         className="flex items-center justify-between px-6 py-4 sticky top-0 z-40"
@@ -71,9 +74,10 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2.5">
+          <span className="pulse-dot h-2 w-2 rounded-full" style={{ background: "var(--good)" }} />
           <span className="text-sm font-semibold" style={{ color: "var(--text-1)" }}>FutureSelf</span>
-          <span className="text-xs" style={{ color: "var(--text-3)" }}>Health Simulation</span>
+          <span className="text-xs" style={{ color: "var(--text-3)" }}>Live Simulation</span>
         </div>
         <button
           onClick={onReset}
@@ -118,16 +122,19 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
                 <span style={{ color: "var(--text-3)" }}>Timeline</span>
                 <span className="font-semibold" style={{ color: "var(--text-1)" }}>{TIMELINE_LABELS[timelineYear]}</span>
               </div>
-              <input
-                type="range"
-                min={0} max={5} step={1}
-                value={timelineYear}
-                onChange={(e) => setTimelineYear(Number(e.target.value))}
-                className="w-full"
-                style={{
-                  background: `linear-gradient(to right, var(--text-1) ${(timelineYear / 5) * 100}%, var(--border) ${(timelineYear / 5) * 100}%)`,
-                }}
-              />
+              <div className="slider-wrap" style={{ height: 20 }}>
+                <div className="slider-track">
+                  <div className="slider-fill" style={{ width: `${(timelineYear / 5) * 100}%`, background: "var(--text-1)" }} />
+                </div>
+                <input
+                  type="range"
+                  min={0} max={5} step={1}
+                  value={timelineYear}
+                  onChange={(e) => setTimelineYear(Number(e.target.value))}
+                  className="w-full"
+                  style={{ background: "transparent" }}
+                />
+              </div>
               <div className="flex justify-between text-xs" style={{ color: "var(--text-3)" }}>
                 <span>Now</span>
                 <span>5 years</span>
@@ -136,7 +143,7 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
           </div>
 
           {/* Risks */}
-          <div className="card p-5 space-y-4">
+          <div className="card p-5 space-y-4 stagger-children">
             <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--text-3)" }}>
               Risk profile
             </p>
@@ -164,16 +171,19 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
                       {s.format(val)}
                     </span>
                   </div>
-                  <input
-                    type="range"
-                    min={s.min} max={s.max} step={s.step}
-                    value={val}
-                    onChange={(e) => onInputChange(s.key, Number(e.target.value))}
-                    className="w-full"
-                    style={{
-                      background: `linear-gradient(to right, var(--text-1) ${pct}%, var(--border) ${pct}%)`,
-                    }}
-                  />
+                  <div className="slider-wrap" style={{ height: 20 }}>
+                    <div className="slider-track">
+                      <div className="slider-fill" style={{ width: `${pct}%`, background: "var(--text-1)" }} />
+                    </div>
+                    <input
+                      type="range"
+                      min={s.min} max={s.max} step={s.step}
+                      value={val}
+                      onChange={(e) => onInputChange(s.key, Number(e.target.value))}
+                      className="w-full"
+                      style={{ background: "transparent" }}
+                    />
+                  </div>
                 </div>
               );
             })}
