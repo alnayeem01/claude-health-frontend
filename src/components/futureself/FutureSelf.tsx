@@ -8,6 +8,9 @@ import ProcessingScreen from "./ProcessingScreen";
 import Dashboard from "./Dashboard";
 
 const DEFAULT_INPUTS: LifestyleInputs = {
+  age: 25,
+  height: 67,
+  weight: 70,
   sleep: 7,
   stress: 5,
   exercise: 3,

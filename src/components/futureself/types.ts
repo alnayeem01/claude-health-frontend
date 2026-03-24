@@ -1,4 +1,7 @@
 export type LifestyleInputs = {
+  age: number;
+  height: number;
+  weight: number;
   sleep: number;
   stress: number;
   exercise: number;
@@ -8,6 +11,7 @@ export type LifestyleInputs = {
 
 export type HealthMetrics = {
   overallScore: number;
+  bmi: number;
   heartRisk: number;
   burnoutRisk: number;
   cognitiveRisk: number;
@@ -24,6 +28,18 @@ export type InsightData = {
 };
 
 export function computeHealth(i: LifestyleInputs): HealthMetrics {
+  const heightM = i.height * 0.0254;
+  const bmi = i.weight / (heightM ** 2);
+
+  const bmiScore =
+    bmi >= 18.5 && bmi <= 24.9
+      ? 100
+      : bmi < 18.5
+      ? Math.max(0, 100 - (18.5 - bmi) * 18)
+      : Math.max(0, 100 - (bmi - 24.9) * 6);
+
+  const agePenalty = i.age > 40 ? Math.min(15, (i.age - 40) * 0.35) : 0;
+
   const sleepScore =
     i.sleep >= 7 && i.sleep <= 9
       ? 100
@@ -36,20 +52,23 @@ export function computeHealth(i: LifestyleInputs): HealthMetrics {
   );
   const dietScore = Math.min(100, (i.diet / 10) * 100);
 
-  const overallScore = Math.round(
-    sleepScore * 0.25 +
-      stressScore * 0.25 +
-      exerciseScore * 0.22 +
-      screenScore * 0.13 +
-      dietScore * 0.15
-  );
+  const rawScore =
+    sleepScore * 0.22 +
+    stressScore * 0.22 +
+    exerciseScore * 0.18 +
+    screenScore * 0.10 +
+    dietScore * 0.14 +
+    bmiScore * 0.14;
+
+  const overallScore = Math.round(Math.max(0, rawScore - agePenalty));
 
   const heartRisk = Math.round(
     Math.min(100, Math.max(0,
-      (100 - stressScore) * 0.38 +
-      (100 - sleepScore) * 0.28 +
-      (100 - exerciseScore) * 0.22 +
-      (100 - dietScore) * 0.12
+      (100 - stressScore) * 0.30 +
+      (100 - sleepScore) * 0.22 +
+      (100 - exerciseScore) * 0.18 +
+      (100 - dietScore) * 0.10 +
+      (100 - bmiScore) * 0.20
     ))
   );
   const burnoutRisk = Math.round(
@@ -62,10 +81,11 @@ export function computeHealth(i: LifestyleInputs): HealthMetrics {
   );
   const cognitiveRisk = Math.round(
     Math.min(100, Math.max(0,
-      (100 - sleepScore) * 0.36 +
-      (100 - stressScore) * 0.3 +
-      (100 - exerciseScore) * 0.2 +
-      (100 - dietScore) * 0.14
+      (100 - sleepScore) * 0.34 +
+      (100 - stressScore) * 0.28 +
+      (100 - exerciseScore) * 0.18 +
+      (100 - dietScore) * 0.12 +
+      (100 - bmiScore) * 0.08
     ))
   );
 
@@ -74,7 +94,7 @@ export function computeHealth(i: LifestyleInputs): HealthMetrics {
   const confidence: "Low" | "Medium" | "High" =
     overallScore >= 70 || highRisk <= 30 ? "High" : overallScore >= 45 ? "Medium" : "Low";
 
-  return { overallScore, heartRisk, burnoutRisk, cognitiveRisk, projectedAge, confidence };
+  return { overallScore, bmi: Math.round(bmi * 10) / 10, heartRisk, burnoutRisk, cognitiveRisk, projectedAge, confidence };
 }
 
 export function buildInsight(i: LifestyleInputs, m: HealthMetrics): InsightData {
@@ -115,8 +135,16 @@ export function buildInsight(i: LifestyleInputs, m: HealthMetrics): InsightData 
     `For example, poor sleep raises cortisol, which increases cravings and reduces exercise motivation — creating a reinforcing cycle. ` +
     `The ${dominantRisk} risk at ${Math.max(m.heartRisk, m.burnoutRisk, m.cognitiveRisk)}% represents the most likely first-order consequence of sustained current habits.`;
 
+  const bmiNote =
+    m.bmi > 30
+      ? `Your BMI of ${m.bmi} places you in the obese range — this independently raises cardiovascular and metabolic risk. `
+      : m.bmi > 25
+      ? `Your BMI of ${m.bmi} is in the overweight range — modest weight loss (5–10%) significantly reduces cardiometabolic risk. `
+      : "";
+
   const howToImprove =
     `A practical improvement path: ` +
+    bmiNote +
     (i.sleep < 7 ? `1. Set a fixed sleep window (e.g. 11pm–7am). No screens 45 minutes before bed. ` : "") +
     (i.stress > 5 ? `2. Identify your top 3 stressors and act on at least one. Even reducing 1 stressor drops burnout risk by ~15%. ` : "") +
     (i.exercise < 4 ? `3. Schedule exercise like a meeting. Start with 3 days. Habit formation takes 21–66 days. ` : "") +

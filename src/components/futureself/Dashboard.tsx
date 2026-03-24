@@ -29,11 +29,14 @@ type SliderDef = {
 };
 
 const SLIDERS: SliderDef[] = [
-  { key: "sleep",      label: "Sleep",    min: 4,  max: 12, step: 0.5, format: (v) => `${v}h` },
-  { key: "stress",     label: "Stress",   min: 0,  max: 10, step: 1,   format: (v) => `${v}/10` },
-  { key: "exercise",   label: "Exercise", min: 0,  max: 7,  step: 1,   format: (v) => `${v}d/wk` },
-  { key: "screenTime", label: "Screen",   min: 0,  max: 12, step: 0.5, format: (v) => `${v}h` },
-  { key: "diet",       label: "Diet",     min: 1,  max: 10, step: 1,   format: (v) => `${v}/10` },
+  { key: "age",        label: "Age",      min: 16, max: 80,  step: 1,   format: (v) => `${v}y` },
+  { key: "height",     label: "Height",   min: 55, max: 84, step: 1,    format: (v) => `${Math.floor(v / 12)}'${v % 12}"` },
+  { key: "weight",     label: "Weight",   min: 40, max: 150, step: 1,   format: (v) => `${v}kg` },
+  { key: "sleep",      label: "Sleep",    min: 4,  max: 12, step: 0.5,  format: (v) => `${v}h` },
+  { key: "stress",     label: "Stress",   min: 0,  max: 10, step: 1,    format: (v) => `${v}/10` },
+  { key: "exercise",   label: "Exercise", min: 0,  max: 7,  step: 1,    format: (v) => `${v}d/wk` },
+  { key: "screenTime", label: "Screen",   min: 0,  max: 12, step: 0.5,  format: (v) => `${v}h` },
+  { key: "diet",       label: "Diet",     min: 1,  max: 10, step: 1,    format: (v) => `${v}/10` },
 ];
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -93,7 +96,7 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
       </header>
 
       {/* Grid */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-[220px_1fr_320px] gap-5 p-5 max-w-7xl mx-auto w-full">
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,300px)_1fr_320px] gap-5 p-5 max-w-7xl mx-auto w-full">
 
         {/* LEFT — Avatar */}
         <motion.aside
@@ -104,6 +107,20 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
           className="card p-6"
         >
           <Avatar score={projectedScore} projectedAge={projectedAge} />
+          <div
+            className="w-full text-center py-3 rounded-xl mt-3"
+            style={{ background: "var(--bg-inset)" }}
+          >
+            <p className="text-xs" style={{ color: "var(--text-3)" }}>BMI</p>
+            <p className="text-lg font-semibold tabular-nums" style={{
+              color: metrics.bmi >= 18.5 && metrics.bmi <= 24.9 ? "var(--good)" : metrics.bmi <= 29.9 ? "var(--warn)" : "var(--bad)",
+            }}>
+              {metrics.bmi}
+              <span className="text-xs font-normal ml-1.5" style={{ color: "var(--text-3)" }}>
+                {metrics.bmi < 18.5 ? "Underweight" : metrics.bmi <= 24.9 ? "Normal" : metrics.bmi <= 29.9 ? "Overweight" : "Obese"}
+              </span>
+            </p>
+          </div>
         </motion.aside>
 
         {/* CENTER — Metrics */}

@@ -16,14 +16,18 @@ type SliderDef = {
 };
 
 const SLIDERS: SliderDef[] = [
+  { key: "age",        label: "Age",          min: 16, max: 80, step: 1,   format: (v) => `${v} yrs`,  hint: "current age",            icon: "🎂", ticks: 8 },
+  { key: "height",     label: "Height",       min: 55, max: 84, step: 1,  format: (v) => `${Math.floor(v / 12)}'${v % 12}"`, hint: "feet & inches", icon: "📏", ticks: 7 },
+  { key: "weight",     label: "Weight",       min: 40, max: 150, step: 1,  format: (v) => `${v} kg`,   hint: "in kilograms",           icon: "⚖️", ticks: 7 },
   { key: "sleep",      label: "Sleep",        min: 4, max: 12, step: 0.5, format: (v) => `${v} hrs`,  hint: "per night",              icon: "🌙", ticks: 8 },
   { key: "stress",     label: "Stress",       min: 0, max: 10, step: 1,   format: (v) => `${v}/10`,   hint: "daily intensity",        icon: "⚡", ticks: 10 },
   { key: "exercise",   label: "Exercise",     min: 0, max: 7,  step: 1,   format: (v) => `${v} days`, hint: "active days per week",   icon: "🏃", ticks: 7 },
   { key: "screenTime", label: "Screen time",  min: 0, max: 12, step: 0.5, format: (v) => `${v} hrs`,  hint: "non-work daily",         icon: "📱", ticks: 6 },
-  { key: "diet",       label: "Diet quality",  min: 1, max: 10, step: 1,   format: (v) => `${v}/10`,   hint: "nutrition score",        icon: "🥗", ticks: 9 },
+  { key: "diet",       label: "Diet quality", min: 1, max: 10, step: 1,   format: (v) => `${v}/10`,   hint: "nutrition score",        icon: "🥗", ticks: 9 },
 ];
 
 function getSliderColor(key: keyof LifestyleInputs, val: number): string {
+  if (key === "age" || key === "height" || key === "weight") return "var(--text-1)";
   if (key === "stress") return val >= 7 ? "var(--bad)" : val >= 4 ? "var(--warn)" : "var(--good)";
   if (key === "sleep") return val >= 7 && val <= 9 ? "var(--good)" : val >= 6 ? "var(--warn)" : "var(--bad)";
   if (key === "screenTime") return val <= 3 ? "var(--good)" : val <= 6 ? "var(--warn)" : "var(--bad)";

@@ -31,15 +31,22 @@ export default function Avatar({ score, projectedAge }: Props) {
   const skinShadow = "#D4A574";
   const hair = "#3D2B1F";
 
+  const framePx = 248;
+  const figureW = 132;
+  const figureH = Math.round((figureW * 140) / 100);
+
   return (
     <div className="flex flex-col items-center gap-5">
       <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--text-3)" }}>
         Digital Twin
       </p>
 
-      <div className="relative flex items-center justify-center" style={{ width: 170, height: 170 }}>
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: framePx, height: framePx }}
+      >
         {/* Ring */}
-        <svg className="absolute inset-0" width="170" height="170" viewBox="0 0 170 170">
+        <svg className="absolute inset-0" width={framePx} height={framePx} viewBox="0 0 170 170">
           <circle cx="85" cy="85" r="80" fill="none" stroke="var(--bg-inset)" strokeWidth="2.5" />
           <circle
             cx="85" cy="85" r="80" fill="none"
@@ -57,7 +64,7 @@ export default function Avatar({ score, projectedAge }: Props) {
 
         {/* Body */}
         <div className="animate-breathe relative z-10">
-          <svg viewBox="0 0 100 140" width={90} height={126}>
+          <svg viewBox="0 0 100 140" width={figureW} height={figureH}>
             <defs>
               <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={skin} />

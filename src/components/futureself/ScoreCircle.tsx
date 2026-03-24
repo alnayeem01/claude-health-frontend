@@ -96,7 +96,7 @@ export default function ScoreCircle({ score, confidence }: Props) {
                 fill="var(--bg-card)"
                 stroke={color}
                 strokeWidth="2"
-                style={{ transition: "cx 0.3s, cy 0.3s, stroke 0.4s" }}
+                style={{ transition: "stroke 0.4s" }}
               />
             );
           })()}
