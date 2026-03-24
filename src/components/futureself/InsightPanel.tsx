@@ -87,6 +87,10 @@ export default function InsightPanel({ insight, updatedAt }: Props) {
           <ExpandedText text={expandedText} />
         </div>
       )}
+
+      <p className="text-[11px] leading-snug px-0.5" style={{ color: "var(--text-3)" }}>
+        Educational simulation only — not medical advice. Refresh insight by running a new simulation.
+      </p>
     </div>
   );
 }

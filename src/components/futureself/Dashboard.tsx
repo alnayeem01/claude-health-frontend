@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { buildInsight, type LifestyleInputs, type HealthMetrics } from "./types";
+import type { InsightData, LifestyleInputs, HealthMetrics } from "./types";
 import Avatar from "./Avatar";
 import ScoreCircle from "./ScoreCircle";
 import RiskBar from "./RiskBar";
@@ -53,13 +53,14 @@ const fade = {
 type Props = {
   inputs: LifestyleInputs;
   metrics: HealthMetrics;
+  aiInsight: InsightData;
+  insightUpdatedAt: string;
   onInputChange: (key: keyof LifestyleInputs, value: number) => void;
   onReset: () => void;
 };
 
-export default function Dashboard({ inputs, metrics, onInputChange, onReset }: Props) {
+export default function Dashboard({ inputs, metrics, aiInsight, insightUpdatedAt, onInputChange, onReset }: Props) {
   const [timelineYear, setTimelineYear] = useState(5);
-  const insight = useMemo(() => buildInsight(inputs, metrics), [inputs, metrics]);
 
   const projectedScore = Math.round(metrics.overallScore * (1 - (5 - timelineYear) * 0.018));
   const projectedAge = Math.round(metrics.projectedAge - (5 - timelineYear) * 0.8);
@@ -78,8 +79,8 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
         }}
       >
         <div className="flex items-center gap-2.5">
-          <span className="pulse-dot h-2 w-2 rounded-full" style={{ background: "var(--good)" }} />
-          <span className="text-sm font-semibold" style={{ color: "var(--text-1)" }}>FutureSelf</span>
+          
+          <span className="text-sm font-semibold" style={{ color: "var(--text-1)" }}>Health Twin</span>
           <span className="text-xs" style={{ color: "var(--text-3)" }}>Live Simulation</span>
         </div>
         <button
@@ -214,7 +215,7 @@ export default function Dashboard({ inputs, metrics, onInputChange, onReset }: P
           initial="hidden"
           animate="show"
         >
-          <InsightPanel insight={insight} updatedAt="Updated just now" />
+          <InsightPanel insight={aiInsight} updatedAt={insightUpdatedAt} />
         </motion.aside>
       </main>
     </div>

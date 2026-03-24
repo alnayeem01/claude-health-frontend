@@ -5,7 +5,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 export const metadata: Metadata = {
-  title: "FutureSelf — Health Simulation",
+  title: "Health Twin — Health Simulation",
   description: "Simulate your future health and visualize the impact of your lifestyle choices.",
 };
 

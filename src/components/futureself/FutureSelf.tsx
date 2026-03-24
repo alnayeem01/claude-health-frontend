@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { computeHealth, type LifestyleInputs } from "./types";
 import InputScreen from "./InputScreen";
 import ProcessingScreen from "./ProcessingScreen";
 import Dashboard from "./Dashboard";
+import { postHealthSimulate, type HealthSimulateResponse } from "@/lib/healthApi";
 
 const DEFAULT_INPUTS: LifestyleInputs = {
   age: 25,
@@ -18,13 +19,58 @@ const DEFAULT_INPUTS: LifestyleInputs = {
   diet: 6,
 };
 
+function formatInsightTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "Last simulation";
+    return `Simulation · ${d.toLocaleString()}`;
+  } catch {
+    return "Last simulation";
+  }
+}
+
 export default function FutureSelf() {
   const [step, setStep] = useState<"input" | "processing" | "dashboard">("input");
   const [inputs, setInputs] = useState<LifestyleInputs>(DEFAULT_INPUTS);
   const [feedback, setFeedback] = useState<{ text: string; positive: boolean } | null>(null);
+  const [simulateLoading, setSimulateLoading] = useState(false);
+  const [simulateError, setSimulateError] = useState<string | null>(null);
+  const [serverRun, setServerRun] = useState<HealthSimulateResponse | null>(null);
 
   const metrics = useMemo(() => computeHealth(inputs), [inputs]);
   const prevScoreRef = useRef<number | null>(null);
+
+  const runSimulate = useCallback(async () => {
+    setSimulateLoading(true);
+    setSimulateError(null);
+    try {
+      const data = await postHealthSimulate(inputs);
+      setServerRun(data);
+      setSimulateLoading(false);
+      setStep("dashboard");
+    } catch (e) {
+      setSimulateLoading(false);
+      const msg = e instanceof Error ? e.message : "Simulation failed";
+      setSimulateError(msg);
+    }
+  }, [inputs]);
+
+  const handleStartSimulate = useCallback(() => {
+    setSimulateError(null);
+    setSimulateLoading(true);
+    setStep("processing");
+    void runSimulate();
+  }, [runSimulate]);
+
+  const handleProcessingRetry = useCallback(() => {
+    void runSimulate();
+  }, [runSimulate]);
+
+  const handleProcessingBack = useCallback(() => {
+    setSimulateError(null);
+    setSimulateLoading(false);
+    setStep("input");
+  }, []);
 
   useEffect(() => {
     if (step !== "dashboard") {
@@ -51,9 +97,11 @@ export default function FutureSelf() {
     setInputs((prev) => ({ ...prev, [key]: value }));
   }
 
+  const aiInsight = serverRun?.insight;
+  const insightUpdatedAt = serverRun ? formatInsightTime(serverRun.createdAt) : "Last simulation";
+
   return (
     <>
-      {/* Toast */}
       <AnimatePresence>
         {feedback && (
           <motion.div
@@ -78,17 +126,32 @@ export default function FutureSelf() {
       <AnimatePresence mode="wait">
         {step === "input" && (
           <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-            <InputScreen inputs={inputs} onInputChange={handleInputChange} onSimulate={() => setStep("processing")} />
+            <InputScreen inputs={inputs} onInputChange={handleInputChange} onSimulate={handleStartSimulate} />
           </motion.div>
         )}
         {step === "processing" && (
           <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-            <ProcessingScreen onComplete={() => setStep("dashboard")} />
+            <ProcessingScreen
+              loading={simulateLoading}
+              error={simulateError}
+              onRetry={handleProcessingRetry}
+              onBack={handleProcessingBack}
+            />
           </motion.div>
         )}
-        {step === "dashboard" && (
-          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-            <Dashboard inputs={inputs} metrics={metrics} onInputChange={handleInputChange} onReset={() => setStep("input")} />
+        {step === "dashboard" && aiInsight && (
+          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <Dashboard
+              inputs={inputs}
+              metrics={metrics}
+              aiInsight={aiInsight}
+              insightUpdatedAt={insightUpdatedAt}
+              onInputChange={handleInputChange}
+              onReset={() => {
+                setServerRun(null);
+                setStep("input");
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>

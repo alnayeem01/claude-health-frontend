@@ -67,44 +67,48 @@ function DNAHelix() {
   );
 }
 
-type Props = { onComplete: () => void };
+type Props = {
+  loading: boolean;
+  error: string | null;
+  onRetry: () => void;
+  onBack: () => void;
+};
 
-export default function ProcessingScreen({ onComplete }: Props) {
+export default function ProcessingScreen({ loading, error, onRetry, onBack }: Props) {
   const [msgIndex, setMsgIndex] = useState(0);
   const [msgKey, setMsgKey] = useState(0);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    if (!loading || error) return;
     const interval = setInterval(() => {
       setMsgIndex((i) => (i + 1) % MESSAGES.length);
       setMsgKey((k) => k + 1);
     }, 1400);
     return () => clearInterval(interval);
-  }, []);
+  }, [loading, error]);
 
   useEffect(() => {
+    if (!loading || error) {
+      setProgress(error ? 0 : 1);
+      return;
+    }
     const start = performance.now();
-    const duration = 3200;
     let raf: number;
     function tick(now: number) {
-      const p = Math.min((now - start) / duration, 1);
+      const elapsed = now - start;
+      const p = Math.min(elapsed / 8000, 0.92);
       setProgress(p);
-      if (p < 1) raf = requestAnimationFrame(tick);
+      if (loading && !error && p < 0.92) raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
-
-  useEffect(() => {
-    const t = setTimeout(onComplete, 3200);
-    return () => clearTimeout(t);
-  }, [onComplete]);
+  }, [loading, error]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: "var(--bg)" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-5" style={{ background: "var(--bg)" }}>
       <Particles count={20} color="#A8A29E" />
 
-      {/* ECG top strip */}
       <div className="absolute top-0 w-full overflow-hidden" style={{ height: 80, opacity: 0.15 }}>
         <div className="ecg-track flex" style={{ width: SVG_WIDTH * 2 }}>
           {[0, 1].map((copy) => (
@@ -115,7 +119,6 @@ export default function ProcessingScreen({ onComplete }: Props) {
         </div>
       </div>
 
-      {/* ECG bottom strip (mirrored) */}
       <div className="absolute bottom-0 w-full overflow-hidden" style={{ height: 80, opacity: 0.08, transform: "scaleY(-1)" }}>
         <div className="ecg-track flex" style={{ width: SVG_WIDTH * 2 }}>
           {[0, 1].map((copy) => (
@@ -126,11 +129,9 @@ export default function ProcessingScreen({ onComplete }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-7 z-10">
-        {/* DNA Helix */}
+      <div className="flex flex-col items-center gap-7 z-10 max-w-sm w-full">
         <DNAHelix />
 
-        {/* Progress bar */}
         <div className="w-48 h-1 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
           <div
             className="h-full rounded-full"
@@ -142,12 +143,41 @@ export default function ProcessingScreen({ onComplete }: Props) {
           />
         </div>
 
-        {/* Message */}
-        <div style={{ minHeight: 28 }}>
-          <p key={msgKey} className="animate-msg text-sm font-medium text-center" style={{ color: "var(--text-2)" }}>
-            {MESSAGES[msgIndex]}
-          </p>
-        </div>
+        {error ? (
+          <>
+            <p className="text-sm font-medium text-center" style={{ color: "var(--bad)" }}>
+              {error}
+            </p>
+            <div className="flex gap-2 w-full">
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex-1 rounded-xl py-2.5 text-xs font-medium"
+                style={{
+                  background: "var(--bg-card)",
+                  color: "var(--text-2)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                Edit inputs
+              </button>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="flex-1 rounded-xl py-2.5 text-xs font-semibold"
+                style={{ background: "var(--text-1)", color: "var(--bg-card)" }}
+              >
+                Retry
+              </button>
+            </div>
+          </>
+        ) : (
+          <div style={{ minHeight: 28 }}>
+            <p key={msgKey} className="animate-msg text-sm font-medium text-center" style={{ color: "var(--text-2)" }}>
+              {loading ? MESSAGES[msgIndex] : "Done"}
+            </p>
+          </div>
+        )}
 
         <p className="text-xs" style={{ color: "var(--text-3)" }}>
           FutureSelf · Simulation Engine
