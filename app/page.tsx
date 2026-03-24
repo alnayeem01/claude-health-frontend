@@ -1,5 +1,5 @@
-import HealthDashboard from "@/components/health/HealthDashboard";
+import FutureSelf from "@/components/futureself/FutureSelf";
 
 export default function Home() {
-  return <HealthDashboard />;
+  return <FutureSelf />;
 }
