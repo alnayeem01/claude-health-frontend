@@ -23,7 +23,6 @@ export default function FutureSelf() {
   const metrics = useMemo(() => computeHealth(inputs), [inputs]);
   const prevScoreRef = useRef<number | null>(null);
 
-  // Show floating feedback when score shifts in dashboard
   useEffect(() => {
     if (step !== "dashboard") {
       prevScoreRef.current = null;
@@ -36,11 +35,11 @@ export default function FutureSelf() {
     const diff = metrics.overallScore - prevScoreRef.current;
     if (Math.abs(diff) >= 2) {
       setFeedback({
-        text: diff > 0 ? "Improvement detected ↑" : "Risk increasing ↑",
+        text: diff > 0 ? "Risk decreasing ↓" : "Risk increasing ↑",
         positive: diff > 0,
       });
       prevScoreRef.current = metrics.overallScore;
-      const t = setTimeout(() => setFeedback(null), 2400);
+      const t = setTimeout(() => setFeedback(null), 2200);
       return () => clearTimeout(t);
     }
   }, [metrics.overallScore, step]);
@@ -51,24 +50,21 @@ export default function FutureSelf() {
 
   return (
     <>
-      {/* Floating feedback toast */}
+      {/* Toast */}
       <AnimatePresence>
         {feedback && (
           <motion.div
             key="toast"
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.25 }}
-            className="fixed bottom-7 left-1/2 z-50 rounded-full px-5 py-2.5 text-xs font-semibold"
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full px-4 py-2 text-xs font-medium"
             style={{
-              transform: "translateX(-50%)",
-              background: feedback.positive
-                ? "rgba(0,245,212,0.12)"
-                : "rgba(255,77,77,0.12)",
-              border: `1px solid ${feedback.positive ? "rgba(0,245,212,0.5)" : "rgba(255,77,77,0.5)"}`,
-              color: feedback.positive ? "var(--primary)" : "var(--danger)",
-              backdropFilter: "blur(12px)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
+              color: feedback.positive ? "var(--good)" : "var(--bad)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
             {feedback.text}
@@ -76,49 +72,20 @@ export default function FutureSelf() {
         )}
       </AnimatePresence>
 
-      {/* Step transitions */}
       <AnimatePresence mode="wait">
         {step === "input" && (
-          <motion.div
-            key="input"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3 }}
-          >
-            <InputScreen
-              inputs={inputs}
-              onInputChange={handleInputChange}
-              onSimulate={() => setStep("processing")}
-            />
+          <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+            <InputScreen inputs={inputs} onInputChange={handleInputChange} onSimulate={() => setStep("processing")} />
           </motion.div>
         )}
-
         {step === "processing" && (
-          <motion.div
-            key="processing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
             <ProcessingScreen onComplete={() => setStep("dashboard")} />
           </motion.div>
         )}
-
         {step === "dashboard" && (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.35 }}
-          >
-            <Dashboard
-              inputs={inputs}
-              metrics={metrics}
-              onInputChange={handleInputChange}
-              onReset={() => setStep("input")}
-            />
+          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+            <Dashboard inputs={inputs} metrics={metrics} onInputChange={handleInputChange} onReset={() => setStep("input")} />
           </motion.div>
         )}
       </AnimatePresence>

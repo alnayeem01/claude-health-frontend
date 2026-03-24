@@ -1,9 +1,9 @@
 export type LifestyleInputs = {
-  sleep: number;      // 4–12 hours
-  stress: number;     // 0–10
-  exercise: number;   // 0–7 days/week
-  screenTime: number; // 0–12 hours/day
-  diet: number;       // 1–10 quality score
+  sleep: number;
+  stress: number;
+  exercise: number;
+  screenTime: number;
+  diet: number;
 };
 
 export type HealthMetrics = {
@@ -24,7 +24,6 @@ export type InsightData = {
 };
 
 export function computeHealth(i: LifestyleInputs): HealthMetrics {
-  // Component scores 0–100 (higher = better)
   const sleepScore =
     i.sleep >= 7 && i.sleep <= 9
       ? 100
@@ -46,75 +45,46 @@ export function computeHealth(i: LifestyleInputs): HealthMetrics {
   );
 
   const heartRisk = Math.round(
-    Math.min(
-      100,
-      Math.max(
-        0,
-        (100 - stressScore) * 0.38 +
-          (100 - sleepScore) * 0.28 +
-          (100 - exerciseScore) * 0.22 +
-          (100 - dietScore) * 0.12
-      )
-    )
+    Math.min(100, Math.max(0,
+      (100 - stressScore) * 0.38 +
+      (100 - sleepScore) * 0.28 +
+      (100 - exerciseScore) * 0.22 +
+      (100 - dietScore) * 0.12
+    ))
   );
   const burnoutRisk = Math.round(
-    Math.min(
-      100,
-      Math.max(
-        0,
-        (100 - stressScore) * 0.5 +
-          (100 - sleepScore) * 0.32 +
-          (100 - exerciseScore) * 0.12 +
-          (100 - screenScore) * 0.06
-      )
-    )
+    Math.min(100, Math.max(0,
+      (100 - stressScore) * 0.5 +
+      (100 - sleepScore) * 0.32 +
+      (100 - exerciseScore) * 0.12 +
+      (100 - screenScore) * 0.06
+    ))
   );
   const cognitiveRisk = Math.round(
-    Math.min(
-      100,
-      Math.max(
-        0,
-        (100 - sleepScore) * 0.36 +
-          (100 - stressScore) * 0.3 +
-          (100 - exerciseScore) * 0.2 +
-          (100 - dietScore) * 0.14
-      )
-    )
+    Math.min(100, Math.max(0,
+      (100 - sleepScore) * 0.36 +
+      (100 - stressScore) * 0.3 +
+      (100 - exerciseScore) * 0.2 +
+      (100 - dietScore) * 0.14
+    ))
   );
 
   const projectedAge = Math.round(72 + (overallScore / 100) * 22);
-
-  const higherRisk = Math.max(heartRisk, burnoutRisk, cognitiveRisk);
+  const highRisk = Math.max(heartRisk, burnoutRisk, cognitiveRisk);
   const confidence: "Low" | "Medium" | "High" =
-    overallScore >= 70 || higherRisk <= 30
-      ? "High"
-      : overallScore >= 45
-      ? "Medium"
-      : "Low";
+    overallScore >= 70 || highRisk <= 30 ? "High" : overallScore >= 45 ? "Medium" : "Low";
 
-  return {
-    overallScore,
-    heartRisk,
-    burnoutRisk,
-    cognitiveRisk,
-    projectedAge,
-    confidence,
-  };
+  return { overallScore, heartRisk, burnoutRisk, cognitiveRisk, projectedAge, confidence };
 }
 
-export function buildInsight(
-  i: LifestyleInputs,
-  m: HealthMetrics
-): InsightData {
-  // Observation
+export function buildInsight(i: LifestyleInputs, m: HealthMetrics): InsightData {
   const observation =
     m.overallScore >= 75
       ? "Your lifestyle profile reflects strong preventive health habits. Sleep, stress, and activity are all near optimal ranges."
       : m.overallScore >= 55
       ? `Your profile shows a mixed pattern — ${i.sleep < 7 ? "sleep deprivation" : i.stress > 6 ? "elevated stress" : "low activity"} is the primary drag on your score.`
-      : `Your current lifestyle is creating compounding risk. Multiple inputs are outside safe ranges and will accelerate biological aging if unchanged.`;
+      : "Your current lifestyle is creating compounding risk. Multiple inputs are outside safe ranges and will accelerate biological aging if unchanged.";
 
-  // Risk
   const dominantRisk =
     m.burnoutRisk > m.heartRisk && m.burnoutRisk > m.cognitiveRisk
       ? "burnout"
@@ -129,7 +99,6 @@ export function buildInsight(
       ? `Cardiovascular risk at ${m.heartRisk}% is elevated. Sustained high stress and low exercise directly strain heart health over time.`
       : `Cognitive risk at ${m.cognitiveRisk}% is notable. Sleep quality is the single strongest predictor of long-term cognitive function.`;
 
-  // Recommendation
   const recommendation =
     i.exercise <= 2
       ? "Add 3 days of moderate exercise per week — even 30-minute walks. This alone cuts all-cause mortality risk by 35%."
@@ -148,36 +117,28 @@ export function buildInsight(
 
   const howToImprove =
     `A practical improvement path: ` +
-    (i.sleep < 7
-      ? `1. Set a fixed sleep window (e.g. 11pm–7am). Use blackout curtains. No screens 45 minutes before bed. `
-      : "") +
-    (i.stress > 5
-      ? `2. Implement a "stress audit" — identify your top 3 stressors and act on at least one. Even reducing 1 stressor drops burnout risk by ~15%. `
-      : "") +
-    (i.exercise < 4
-      ? `3. Schedule exercise like a meeting. Start with 3 days. Habit formation takes 21–66 days. `
-      : "") +
+    (i.sleep < 7 ? `1. Set a fixed sleep window (e.g. 11pm–7am). No screens 45 minutes before bed. ` : "") +
+    (i.stress > 5 ? `2. Identify your top 3 stressors and act on at least one. Even reducing 1 stressor drops burnout risk by ~15%. ` : "") +
+    (i.exercise < 4 ? `3. Schedule exercise like a meeting. Start with 3 days. Habit formation takes 21–66 days. ` : "") +
     `These changes, maintained for 90 days, could increase your score by 10–20 points.`;
 
   return { observation, risk, recommendation, explainWhy, howToImprove };
 }
 
 export function getScoreColor(score: number): string {
-  if (score >= 72) return "var(--primary)"; // cyan
-  if (score >= 50) return "var(--warning)"; // yellow
-  return "var(--danger)";                   // red
+  if (score >= 72) return "var(--good)";
+  if (score >= 50) return "var(--warn)";
+  return "var(--bad)";
 }
 
 export function getRiskColor(risk: number): string {
-  if (risk <= 28) return "var(--primary)";
-  if (risk <= 55) return "var(--warning)";
-  return "var(--danger)";
+  if (risk <= 28) return "var(--good)";
+  if (risk <= 55) return "var(--warn)";
+  return "var(--bad)";
 }
 
-export function getTrendSymbol(
-  risk: number
-): { symbol: string; color: string } {
-  if (risk <= 28) return { symbol: "↓", color: "var(--primary)" };
-  if (risk <= 55) return { symbol: "→", color: "var(--warning)" };
-  return { symbol: "↑", color: "var(--danger)" };
+export function getTrend(risk: number): { symbol: string; label: string; color: string } {
+  if (risk <= 28) return { symbol: "↓", label: "Low", color: "var(--good)" };
+  if (risk <= 55) return { symbol: "→", label: "Moderate", color: "var(--warn)" };
+  return { symbol: "↑", label: "High", color: "var(--bad)" };
 }
